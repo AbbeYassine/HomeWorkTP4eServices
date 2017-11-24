@@ -110,7 +110,7 @@ docker run --name product_service_1 -d -p 4200:8080 -t springio/product-service
 
 * **-d** pour dire qu'on veut lancer cette instance en background . 
 
-* **springio/gs-spring-boot-docker** est le nom de l'image qu'on a créer . 
+* **springio/product-service** est le nom de l'image qu'on a créer . 
 
 On voit bien nos instance marche sur les ports on tapant la commande **docker ps**
 ```
@@ -121,5 +121,9 @@ ab7e58d6cdd6        springio/product-service   "java -Djava.secur..."   3 minute
 ```
 
 Pour vérifier il suffit de lancer [http://localhost:4200/products](http://localhost:4200/products) pour afficher la liste des produits
+
+## ConfigService 
+On va proceder les mémes étape pour créer l'image du service ProductService . Mais le probélme que dans le lancement de l'image 
+docker ne connait pas le path `` file:./src/main/resources/myConfig `` 
 
 
