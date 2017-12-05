@@ -125,5 +125,72 @@ Pour vérifier il suffit de lancer [http://localhost:4200/products](http://local
 ## ConfigService 
 On va proceder les mémes étape pour créer l'image du service ProductService . Mais le probélme que dans le lancement de l'image 
 docker ne connait pas le path `` file:./src/main/resources/myConfig `` 
+### Resolution :
+Docker ne connait pas ce path car il lance une image .jar , la solution est de créer une repository qui contient les fichiers de configuration : [https://github.com/AbbeYassine/Config-Spring-Cloud](https://github.com/AbbeYassine/Config-Spring-Cloud)
+Le fichier de config devient comme suit : 
+```
+spring.application.name=config-service
+server.port=8888
+spring.profiles.include=git
+spring.cloud.config.server.git.uri=https://github.com/AbbeYassine/Config-Spring-Cloud/
+```
+## DiscoveryService 
+On va proceder les mémes étape pour créer l'image du service ProductService 
+## ProxyService 
+On va proceder les mémes étape pour créer l'image du service ProductService 
+## Links Services
+Aprés la creation des images , une petite verification par **docker images**
+```
+REPOSITORY                   TAG                 IMAGE ID            CREATED             SIZE
+springio/proxy-service       latest              d65316ddf9cd        10 hours ago        140MB
+springio/product-service     latest              e50ff74feca2        10 hours ago        152MB
+springio/discovery-service   latest              0d57aa23228e        11 hours ago        141MB
+springio/config-service      latest              03c193432915        2 days ago          124MB
+```
+Mais le probléme ici que les images sont indépendantes or les services Discovery , Proxy et Product dépend du service ConfigService . 
+La solution est **docker-compose**
+Aprés des jours de test j'ai réussi enfin d'obtenir le fichier **docker-composer.yml** qui marche sans probléme . 
+Ce blog m'a aider beaucoup de trouver la solution : [https://exampledriven.wordpress.com/2016/06/24/spring-boot-docker-example/](https://exampledriven.wordpress.com/2016/06/24/spring-boot-docker-example/)
+```
+discovery-service:
+    image: springio/discovery-service 
+    container_name: discovery-service
+    ports: 
+        - "8761:8761"
+    depends_on: 
+        - config-service
+    networks:
+        - network-bridge
+```
+On voit ici **depends_on** qui sert à faire la dépendance entre discoveryService et ConfigService 
+Il faut changer le fichier de configuration à **bootstrap.yml** pour qu'il prend en consideration l'uri **http://config-service:8888** ( **localhost**  ne marche pas dans le cas du docker car il sont 2 containers différents ) 
+Le fichier bootstrap.yml du DiscoveryService est : 
+
+```
+spring:
+  application:
+    name: discovery-service
+  cloud:
+    config:
+      uri: http://config-service:8888
+```
+
+La commande **docker-compose up -d** permet de lancer toutes les images décrites dans le fichier **docker-compose.yml**
+
+```
+Creating network "homeworkt4eservices_network-bridge" with driver "bridge"
+Creating config-service ...
+Creating config-service ... done
+Creating proxy-service ...
+Creating discovery-service ...
+Creating product-service ...
+Creating proxy-service
+Creating discovery-service
+Creating proxy-service ... done
+```
+Pour créer multiple containers du productService on ajoute l'option **--scale**
+
+`` docker-compose up --scale product-service:3 ``
+
 
 
