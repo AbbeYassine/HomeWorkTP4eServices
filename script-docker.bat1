@@ -1,0 +1,37 @@
+
+set imageDiscoveryService = "springio/discovery-service";
+set discoveryApp = "discovery_service";
+docker stop discoveryApp || true;
+docker rm %discoveryApp% || true;
+docker rmi %imageDiscoveryService% || true;
+
+./discovery-service/mvnw install dockerfile:build ;
+docker run --name %discoveryApp% -d -p 8761:8761 -t %imageDiscoveryService%
+
+
+
+set imageProductService = "springio/product-service"
+set instance1 = "product_service_1";
+set instance2 = "product_service_2";
+set instance3 = "product_service_3";
+docker stop %instance1% || true ;
+docker stop %instance2% || true ;
+docker stop %instance3% || true ;
+docker rm %instance1% || true ;
+docker rm %instance2% || true ;
+docker rm %instance3% || true ;
+
+docker rmi %imageProductService% || true ;
+
+
+
+
+
+
+./product-service/mvnw install dockerfile:build ;
+
+docker run --name %instance1% -d -p 4200:8080 -t %imageProductService%
+docker run --name %instance2% -d -p 4201:8080 -t %imageProductService%
+docker run --name %instance3% -d -p 4202:8080 -t %imageProductService%
+
+

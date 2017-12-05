@@ -1,0 +1,43 @@
+version: '2.0'
+services:
+ config-service:
+    image : springio/config-service
+    container_name: config-service
+    ports:
+        - "8888:8888"
+    networks:
+        - network-bridge
+ 
+ discovery-service:
+    image: springio/discovery-service 
+    container_name: discovery-service
+    ports: 
+        - "8761:8761"
+    depends_on: 
+        - config-service
+    networks:
+        - network-bridge
+
+ product-service:
+    image : springio/product-service
+    container_name: product-service
+    ports: 
+        - "8080:8080"
+    depends_on: 
+        - config-service
+    networks:
+        - network-bridge
+
+ proxy-service:
+    image : springio/proxy-service
+    container_name: proxy-service
+    ports: 
+        - "9999:9999"
+    depends_on: 
+        - config-service
+    networks:
+        - network-bridge
+
+networks:
+    network-bridge:
+       driver: bridge
